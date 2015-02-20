@@ -34,7 +34,7 @@ class GA_Parse
   
   function __construct($_COOKIE) {
 	   // If we have the cookies we can go ahead and parse them.
-	   if (isset($_COOKIE["__utma"]) and isset($_COOKIE["__utmz"])) {
+	   if (isset($_COOKIE['__utma']) and isset($_COOKIE['__utmz'])) {
 	       $this->ParseCookies();      
        }
       
@@ -43,31 +43,26 @@ class GA_Parse
   function ParseCookies(){
 
   // Parse __utmz cookie
-  list($domain_hash,$timestamp, $session_number, $campaign_numer, $campaign_data) = preg_split('[\.]', $_COOKIE["__utmz"],5);
+  list($domain_hash,$timestamp, $session_number, $campaign_numer, $campaign_data) = preg_split('[\.]', $_COOKIE['__utmz'],5);
 
   // Parse the campaign data
-  $campaign_data = parse_str(strtr($campaign_data, "|", "&"));
+  $campaign_data = parse_str(strtr($campaign_data, '|', '&'));
 
   $this->campaign_source = $utmcsr;
   $this->campaign_name = $utmccn;
   $this->campaign_medium = $utmcmd;
-  if (isset($utmctr)) $this->campaign_term = $utmctr;
-  if (isset($utmcct)) $this->campaign_content = $utmcct;
+  $this->campaign_term = (isset($utmctr) ? $utmctr : '');
+  $this->campaign_content = (isset($utmcct) ? $utmcct : '');
 
-  // You should tag you campaigns manually to have a full view
-  // of your adwords campaigns data. 
-  // The same happens with Urchin, tag manually to have your campaign data parsed properly.
-  
+  // If auto-tagging has been enabled in Google AdWords, we can infer some
+  // campaign parameters if they weren't defined manually
   if (isset($utmgclid)) {
-    $this->campaign_source = "google";
-    $this->campaign_name = "";
-    $this->campaign_medium = "cpc";
-    $this->campaign_content = "";
-    $this->campaign_term = $utmctr;
+    if (!isset($utmcsr)) $this->campaign_source = 'google';
+    if (!isset($utmcmd)) $this->campaign_medium = 'cpc';
   }
 
   // Parse the __utma Cookie
-  list($domain_hash,$random_id,$time_initial_visit,$time_beginning_previous_visit,$time_beginning_current_visit,$session_counter) = preg_split('[\.]', $_COOKIE["__utma"]);
+  list($domain_hash,$random_id,$time_initial_visit,$time_beginning_previous_visit,$time_beginning_current_visit,$session_counter) = preg_split('[\.]', $_COOKIE['__utma']);
 
   $this->first_visit = new \DateTime();
   $this->first_visit->setTimestamp($time_initial_visit);
@@ -82,7 +77,7 @@ class GA_Parse
 
   // Parse the __utmb Cookie
 
-  list($domain_hash,$pages_viewed,$garbage,$time_beginning_current_session) = preg_split('[\.]', $_COOKIE["__utmb"]);
+  list($domain_hash,$pages_viewed,$garbage,$time_beginning_current_session) = preg_split('[\.]', $_COOKIE['__utmb']);
   $this->pages_viewed = $pages_viewed;
 
 
